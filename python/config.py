@@ -102,3 +102,18 @@ N_ROLLING_HISTORY = 2
 
 MIN_VOLUME_THRESHOLD = 1e-7
 """No music visualization displayed if recorded audio volume below threshold"""
+
+MAX_VALUE=1
+ONE3RD = MAX_VALUE / 3
+
+#SOURCE='microphone'
+SOURCE='stdin'
+"""choose [microphone|stdin]
+microphone: will process microphone data
+stdin: will process the stream from stdin. for example:
+find out which output device to use with following command
+  pacmd list | grep ".monitor"
+this will output among others something like 'alsa_output.pci-0000_00_1b.0.iec958-stereo.monitor' - choose the monitor device according to your output device
+start the visualisation with
+  pacat --channels 2 --record -d alsa_output.pci-0000_00_1b.0.iec958-stereo.monitor | python3 -u visualization.py
+"""
