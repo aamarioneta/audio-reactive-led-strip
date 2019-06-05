@@ -17,7 +17,7 @@ to control the leds connected to it.
 """
 
 if DEVICE == 'esp8266':
-    UDP_IP = '192.168.0.150'
+    UDP_IP = '192.168.178.40'
     """IP address of the ESP8266. Must match IP in ws2812_controller.ino"""
     UDP_PORT = 7777
     """Port number used for socket communication between Python and ESP8266"""
@@ -45,7 +45,7 @@ if DEVICE == 'blinkstick':
 USE_GUI = True
 """Whether or not to display a PyQtGraph GUI plot of visualization"""
 
-DISPLAY_FPS = True
+DISPLAY_FPS = False
 """Whether to display the FPS when running (can reduce performance)"""
 
 N_PIXELS = 60
@@ -73,7 +73,7 @@ appear "sluggish" or out of sync with the audio being played if it is too low.
 The FPS should not exceed the maximum refresh rate of the LED strip, which
 depends on how long the LED strip is.
 """
-_max_led_FPS = int(((N_PIXELS * 30e-6) + 50e-6)**-1.0)
+_max_led_FPS = int(((N_PIXELS * 30e-6) + 50e-6) ** -1.0)
 assert FPS <= _max_led_FPS, 'FPS must be <= {}'.format(_max_led_FPS)
 
 MIN_FREQUENCY = 200
@@ -103,8 +103,8 @@ N_ROLLING_HISTORY = 2
 MIN_VOLUME_THRESHOLD = 1e-7
 """No music visualization displayed if recorded audio volume below threshold"""
 
-#SOURCE='microphone'
-SOURCE='stdin'
+SOURCE = 'microphone'
+# SOURCE = 'stdin'
 """choose [microphone|stdin]
 microphone: will process microphone data
 stdin: will process the stream from stdin. for example:
@@ -114,3 +114,5 @@ this will output among others something like 'alsa_output.pci-0000_00_1b.0.iec95
 start the visualisation with
   pacat --channels 2 --record -d alsa_output.pci-0000_00_1b.0.iec958-stereo.monitor | python3 -u visualization.py
 """
+
+ONE3RD = 1 / 3
