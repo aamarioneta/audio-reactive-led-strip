@@ -42,7 +42,7 @@ if DEVICE == 'blinkstick':
     SOFTWARE_GAMMA_CORRECTION = True
     """Set to True because blinkstick doesn't use hardware dithering"""
 
-USE_GUI = True
+USE_GUI = False
 """Whether or not to display a PyQtGraph GUI plot of visualization"""
 
 DISPLAY_FPS = False
@@ -103,8 +103,8 @@ N_ROLLING_HISTORY = 2
 MIN_VOLUME_THRESHOLD = 1e-7
 """No music visualization displayed if recorded audio volume below threshold"""
 
-SOURCE = 'microphone'
-# SOURCE = 'stdin'
+# SOURCE = 'microphone'
+SOURCE = 'stdin'
 """choose [microphone|stdin]
 microphone: will process microphone data
 stdin: will process the stream from stdin. for example:
