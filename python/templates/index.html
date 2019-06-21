@@ -18,30 +18,34 @@
     <body>
         <h1>Hello, {{ user.username }}!</h1>
     <form action="vis" method="post">
-    <div class="app">
-        <div class="item">
-            <div class="slidecontainer">
-                <input type="range" min="0" max="255" value="{{ MAX_BRIGHTNESS }}" class="slider" id="visualize_brightness">
+        <div class="app">
+            <div class="item">
+                <div class="slidecontainer">
+                    <input type="range" min="0" max="255" value="{{ MAX_BRIGHTNESS }}" class="slider" id="visualize_brightness">
+                </div>
             </div>
-        </div>
-        <div class="item"><input id="max_brightness" name="max_brightness" value="128" class="btn-link"></div>
-        <div class="item">
-            <button type="submit" name="name" value="visualize_spectrum" class="btn-link">spectrum</button>
-        </div>
-        <div class="item">
-            <button type="submit" name="name" value="visualize_energy" class="btn-link">energy</button>
-        </div>
-        <div class="item">
-            <button type="submit" name="name" value="visualize_scroll" class="btn-link">scroll</button>
-        </div>
-        <div class="item">
-            <button type="submit" name="name" value="visualize_vumeter" class="btn-link">vumeter</button>
-        </div>
-        <div class="item">
-            <button type="submit" name="name" value="visualize_amplitudePerFrequency" class="btn-link">
-                amplitudePerFrequency
-            </button>
-        </div>
+            <div class="item"><input id="max_brightness" name="max_brightness" value="128" class="btn-link"></div>
+            <div class="item">
+                <a href="/off">Off</a>
+            </div>
+            <div class="item">
+                <button type="submit" name="name" value="visualize_spectrum" class="btn-link">spectrum</button>
+            </div>
+            <div class="item">
+                <button type="submit" name="name" value="visualize_energy" class="btn-link">energy</button>
+            </div>
+            <div class="item">
+                <button type="submit" name="name" value="visualize_scroll" class="btn-link">scroll</button>
+            </div>
+            <div class="item">
+                <button type="submit" name="name" value="visualize_vumeter" class="btn-link">vumeter</button>
+            </div>
+            <div class="item">
+                <button type="submit" name="name" value="visualize_amplitude_per_frequency" class="btn-link">amplitudePerFrequency</button>
+            </div>
+            <div class="item">
+                <button type="submit" name="name" value="visualize_amplitude_per_frequency_one_color" class="btn-link">amplitudePerFrequencyOneColor</button>
+            </div>
 		</div>
     </form>
     </body>

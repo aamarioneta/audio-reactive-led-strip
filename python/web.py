@@ -2,6 +2,10 @@ from flask import Flask
 from flask import render_template
 from flask import request
 import json
+import led
+import config
+import numpy as np
+
 
 app = Flask(__name__)
 
@@ -28,6 +32,13 @@ def brightness():
 @app.route("/get")
 def get():
     return CURRENT_VISUALIZATION
+
+
+@app.route("/off")
+def off():
+    led.pixels = np.tile(0.0, (3, 54))
+    led.update()
+    return render_template('index.html', title='Home', user=CURRENT_VISUALIZATION)
 
 
 @app.route("/config")

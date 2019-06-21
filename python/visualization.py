@@ -9,8 +9,6 @@ import stdin
 import dsp
 import led
 import threading
-import http.client
-import json
 import requests
 
 max_brightness = 64.0
@@ -142,7 +140,7 @@ def visualize_energy(y):
     # Scale by the width of the LED strip
     y *= float((config.N_PIXELS // 2) - 1)
     # Map color channels according to energy in the different freq bands
-    scale = 0.9
+    scale = 0.999
     r = int(np.mean(y[:len(y) // 3] ** scale))
     g = int(np.mean(y[len(y) // 3: 2 * len(y) // 3] ** scale))
     b = int(np.mean(y[2 * len(y) // 3:] ** scale))
@@ -163,13 +161,14 @@ def visualize_energy(y):
     return np.concatenate((p[:, ::-1], p), axis=1)
 
 
-_prev_spectrum = np.tile(0.01, config.N_PIXELS // 2)
+_prev_spectrum = np.tile(0.01, config.N_PIXELS)
 
 
 def visualize_spectrum(y):
     """Effect that maps the Mel filterbank frequencies onto the LED strip"""
     global _prev_spectrum
     y = np.copy(interpolate(y, config.N_PIXELS // 2))
+    _prev_spectrum = np.copy(interpolate(_prev_spectrum, config.N_PIXELS // 2))
     common_mode.update(y)
     try:
         diff = y - _prev_spectrum
@@ -183,7 +182,8 @@ def visualize_spectrum(y):
         g = np.concatenate((g[::-1], g))
         b = np.concatenate((b[::-1], b))
         output = np.array([r, g, b]) * max_brightness
-    except:
+    except Exception as e:
+        print(e)
         r = np.tile(32, config.N_PIXELS)
         g = np.tile(16, config.N_PIXELS)
         b = np.tile(8, config.N_PIXELS)
@@ -191,7 +191,7 @@ def visualize_spectrum(y):
     return output
 
 
-def visualize_amplitudePerFrequency(y):
+def visualize_amplitude_per_frequency(y):
     global _prev_spectrum
     y = np.copy(interpolate(y, config.N_PIXELS))
     _prev_spectrum = np.copy(y)
@@ -201,17 +201,32 @@ def visualize_amplitudePerFrequency(y):
     b = np.tile(0.0001, config.N_PIXELS)
     for i in range(config.N_PIXELS):
         if y[i] < 2 * config.ONE3RD:
-            g[i] = y[i] / 4
-        else:
-            g[i] = 0
-        if y[i] > 2 * config.ONE3RD:
-            r[i] = y[i]
-        else:
-            r[i] = 0
-        if y[i] > config.ONE3RD:
             b[i] = y[i]
         else:
             b[i] = 0
+        if y[i] > 2 * config.ONE3RD:
+            g[i] = y[i]
+        else:
+            g[i] = 0
+        if y[i] > config.ONE3RD:
+            r[i] = y[i]
+        else:
+            r[i] = 0
+    output = np.array([r, g, b]) * max_brightness
+    return output
+
+
+def visualize_amplitude_per_frequency_one_color(y):
+    global _prev_spectrum
+    y = np.copy(interpolate(y, config.N_PIXELS))
+    _prev_spectrum = np.copy(y)
+    # Color channel mappings
+    r = np.tile(0.0001, config.N_PIXELS)
+    g = np.tile(0.0001, config.N_PIXELS)
+    b = np.tile(0.0001, config.N_PIXELS)
+    for i in range(config.N_PIXELS):
+        r[i] = y[i]
+        b[i] = y[i]
     output = np.array([r, g, b]) * max_brightness
     return output
 
@@ -269,7 +284,8 @@ def microphone_update(audio_samples):
     vol = np.max(np.abs(y_data))
     if vol < config.MIN_VOLUME_THRESHOLD:
         print('No audio input. Volume below threshold. Volume:', vol)
-        led.pixels = np.tile(0, (3, config.N_PIXELS))
+        led.pixels = np.tile(0.0, (3, config.N_PIXELS))
+        print(led.pixels)
         led.update()
     else:
         # Transform audio input into the frequency domain
@@ -325,7 +341,7 @@ def update_config():
     global visualization_effect, max_brightness, current_visualization_name, max_brightness
     while True:
         try:
-            http_response = requests.get('http://localhost:5000/config')
+            http_response = requests.get(config.UPDATE_URL)
             ret = http_response.json()
             if max_brightness != ret['MAX_BRIGHTNESS']:
                 max_brightness = ret['MAX_BRIGHTNESS']
@@ -342,10 +358,12 @@ def update_config():
                 if current_visualization_name == "visualize_vumeter":
                     visualization_effect = visualize_vumeter
                 if current_visualization_name == "visualize_amplitudePerFrequency":
-                    visualization_effect = visualize_amplitudePerFrequency
+                    visualization_effect = visualize_amplitude_per_frequency
+                if current_visualization_name == "visualize_amplitudePerFrequencyOneColor":
+                    visualization_effect = visualize_amplitude_per_frequency_one_color
         except Exception as e:
             print(e)
-            visualization_effect = visualize_amplitudePerFrequency
+            visualization_effect = visualize_amplitude_per_frequency
         time.sleep(1)
 
 
@@ -397,7 +415,6 @@ if __name__ == '__main__':
         # Frequency range label
         freq_label = pg.LabelItem('')
 
-
         # Frequency slider
         def freq_slider_change(tick):
             minf = freq_slider.tickValue(0) ** 2.0 * (config.MIC_RATE / 2.0)
@@ -439,7 +456,7 @@ if __name__ == '__main__':
 
         def spectrum_click(x):
             global visualization_effect
-            visualization_effect = visualize_amplitudePerFrequency
+            visualization_effect = visualize_amplitude_per_frequency
             energy_label.setText('Energy', color=inactive_color)
             scroll_label.setText('Scroll', color=inactive_color)
             spectrum_label.setText('Spectrum', color=active_color)
@@ -465,7 +482,7 @@ if __name__ == '__main__':
     # Initialize LEDs
     led.update()
     # Start listening to live audio stream
-    if (config.SOURCE == 'stdin'):
+    if config.SOURCE == 'stdin':
         stdin.start_stream(microphone_update)
     else:
         microphone.start_stream(microphone_update)

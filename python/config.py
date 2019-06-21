@@ -48,7 +48,7 @@ USE_GUI = False
 DISPLAY_FPS = False
 """Whether to display the FPS when running (can reduce performance)"""
 
-N_PIXELS = 60
+N_PIXELS = 54
 """Number of pixels in the LED strip (must match ESP8266 firmware)"""
 
 GAMMA_TABLE_PATH = os.path.join(os.path.dirname(__file__), 'gamma_table.npy')
@@ -116,3 +116,5 @@ start the visualisation with
 """
 
 ONE3RD = 1 / 3
+
+UPDATE_URL = 'http://localhost:5000/config'
