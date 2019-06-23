@@ -357,10 +357,11 @@ def update_config():
                     visualization_effect = visualize_scroll
                 if current_visualization_name == "visualize_vumeter":
                     visualization_effect = visualize_vumeter
-                if current_visualization_name == "visualize_amplitudePerFrequency":
+                if current_visualization_name == "visualize_amplitude_per_frequency":
                     visualization_effect = visualize_amplitude_per_frequency
-                if current_visualization_name == "visualize_amplitudePerFrequencyOneColor":
+                if current_visualization_name == "visualize_amplitude_per_frequency_one_color":
                     visualization_effect = visualize_amplitude_per_frequency_one_color
+                print(visualization_effect)
         except Exception as e:
             print(e)
             visualization_effect = visualize_amplitude_per_frequency

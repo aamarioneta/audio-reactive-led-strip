@@ -18,7 +18,7 @@ def vis():
     global CURRENT_VISUALIZATION, max_brightness
     if request.method == 'POST':
         CURRENT_VISUALIZATION = request.form["name"]
-    return render_template('index.html', title='Home', user=CURRENT_VISUALIZATION)
+    return render_template('index.html', MAX_BRIGHTNESS=max_brightness)
 
 
 @app.route("/brightness", methods=['POST'])
@@ -26,7 +26,7 @@ def brightness():
     global max_brightness
     print(request.form["brightnessValue"])
     max_brightness = int(request.form["brightnessValue"])
-    return render_template('index.html', title='Home', user=CURRENT_VISUALIZATION)
+    return render_template('index.html', MAX_BRIGHTNESS=max_brightness)
 
 
 @app.route("/get")
@@ -38,7 +38,7 @@ def get():
 def off():
     led.pixels = np.tile(0.0, (3, 54))
     led.update()
-    return render_template('index.html', title='Home', user=CURRENT_VISUALIZATION)
+    return render_template('index.html', MAX_BRIGHTNESS=max_brightness)
 
 
 @app.route("/config")

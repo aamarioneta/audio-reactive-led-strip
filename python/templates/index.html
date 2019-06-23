@@ -16,7 +16,6 @@
     </script>
     </head>
     <body>
-        <h1>Hello, {{ user.username }}!</h1>
     <form action="vis" method="post">
         <div class="app">
             <div class="item">
@@ -24,10 +23,8 @@
                     <input type="range" min="0" max="255" value="{{ MAX_BRIGHTNESS }}" class="slider" id="visualize_brightness">
                 </div>
             </div>
-            <div class="item"><input id="max_brightness" name="max_brightness" value="128" class="btn-link"></div>
-            <div class="item">
-                <a href="/off">Off</a>
-            </div>
+            <div class="item"><input id="max_brightness" name="max_brightness" value="{{ MAX_BRIGHTNESS }}" class="btn-link"></div>
+            <div class="item"><a href="/off">Off</a></div>
             <div class="item">
                 <button type="submit" name="name" value="visualize_spectrum" class="btn-link">spectrum</button>
             </div>
