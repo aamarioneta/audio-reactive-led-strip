@@ -14,8 +14,8 @@
 const uint8_t PixelPin = 3;  // make sure to set this to the correct pin, ignored for Esp8266(set to 3 by default for DMA)
 
 // Wifi and socket settings
-const char* ssid     = "timisoara";
-const char* password = "Frasinului11";
+const char* ssid     = "SSID";
+const char* password = "PASSWORD";
 unsigned int localPort = 7777;
 char packetBuffer[BUFFER_LEN];
 
