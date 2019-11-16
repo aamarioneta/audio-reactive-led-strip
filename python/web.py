@@ -36,13 +36,15 @@ def get():
 
 @app.route("/off")
 def off():
-    led.pixels = np.tile(0.0, (3, 54))
+    led.pixels = np.tile(1.0, (3, config.N_PIXELS))
+    led.update()
+    led.pixels = np.tile(0.0, (3, config.N_PIXELS))
     led.update()
     return render_template('index.html', MAX_BRIGHTNESS=max_brightness)
 
 
 @app.route("/config")
-def config():
+def getConfig():
     data = {"CURRENT_VISUALIZATION": CURRENT_VISUALIZATION, "MAX_BRIGHTNESS": max_brightness}
     s = json.dumps(data)
     return s

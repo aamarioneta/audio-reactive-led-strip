@@ -6,7 +6,6 @@ import sys
 import soundfile as sf
 
 def start_stream(callback):
-    p = pyaudio.PyAudio()
     frames_per_buffer = int(config.MIC_RATE / config.FPS)
     overflows = 0
     prev_ovf_time = time.time()
@@ -19,6 +18,3 @@ def start_stream(callback):
             if time.time() > prev_ovf_time + 1:
                 prev_ovf_time = time.time()
                 print('Audio buffer has overflowed {} times'.format(overflows))
-    stream.stop_stream()
-    stream.close()
-    p.terminate()

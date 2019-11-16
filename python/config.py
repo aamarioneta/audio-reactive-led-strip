@@ -118,3 +118,5 @@ start the visualisation with
 ONE3RD = 1 / 3
 
 UPDATE_URL = 'http://localhost:5000/config'
+
+NR_OF_CHANNELS = 3.0
