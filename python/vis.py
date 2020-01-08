@@ -1,5 +1,6 @@
 from __future__ import print_function
 from __future__ import division
+import json
 import time
 import numpy as np
 from scipy.ndimage.filters import gaussian_filter1d
@@ -9,9 +10,12 @@ import stdin
 import dsp
 import led
 import threading
-import requests
+from flask import Flask
+from flask import render_template
+from flask import request
 
 max_brightness = 64.0
+CURRENT_VISUALIZATION = "visualize_vumeter"
 current_visualization_name = "visualize_amplitudePerFrequency"
 
 _time_prev = time.time() * 1000.0
@@ -19,6 +23,8 @@ _time_prev = time.time() * 1000.0
 
 _fps = dsp.ExpFilter(val=config.FPS, alpha_decay=0.2, alpha_rise=0.2)
 """The low-pass filter used to estimate frames-per-second"""
+
+app = Flask(__name__)
 
 
 def frames_per_second():
@@ -243,9 +249,9 @@ def visualize_vumeter(y):
     r = np.tile(0.0, config.N_PIXELS)
     g = np.tile(0.0, config.N_PIXELS)
     b = np.tile(0.0, config.N_PIXELS)
-    maxAmplitude = np.average(y)
-    globalMaxAmp = max(maxAmplitude, globalMaxAmp)
-    j = int(maxAmplitude * config.N_PIXELS / globalMaxAmp)
+    max_amplitude = np.average(y)
+    globalMaxAmp = max(max_amplitude, globalMaxAmp)
+    j = int(max_amplitude * config.N_PIXELS / globalMaxAmp)
     for i in range(config.N_PIXELS):
         if j > i:
             if i < config.N_PIXELS / 3 * 2:
@@ -283,20 +289,20 @@ def microphone_update(audio_samples):
 
     vol = np.max(np.abs(y_data))
     if vol < config.MIN_VOLUME_THRESHOLD:
-        print('No audio input. Volume below threshold. Volume:', vol)
+        # print('No audio input. Volume below threshold. Volume:', vol)
         led.pixels = np.tile(0.0, (3, config.N_PIXELS))
-        print(led.pixels)
+        # print(led.pixels)
         led.update()
     else:
         # Transform audio input into the frequency domain
-        N = len(y_data)
-        N_zeros = 2 ** int(np.ceil(np.log2(N))) - N
+        data_length = len(y_data)
+        n_zeros = 2 ** int(np.ceil(np.log2(data_length))) - data_length
         # Pad with zeros until the next power of two
         y_data *= fft_window
-        y_padded = np.pad(y_data, (0, N_zeros), mode='constant')
-        YS = np.abs(np.fft.rfft(y_padded)[:N // 2])
+        y_padded = np.pad(y_data, (0, n_zeros), mode='constant')
+        ys = np.abs(np.fft.rfft(y_padded)[:data_length // 2])
         # Construct a Mel filterbank from the FFT data
-        mel = np.atleast_2d(YS).T * dsp.mel_y.T
+        mel = np.atleast_2d(ys).T * dsp.mel_y.T
         # Scale data to values more suitable for visualization
         # mel = np.sum(mel, axis=0)
         mel = np.sum(mel, axis=0)
@@ -337,40 +343,69 @@ visualization_effect = visualize_vumeter
 """Visualization effect to display on the LED strip"""
 
 
-def update_config():
-    global visualization_effect, max_brightness, current_visualization_name, max_brightness
-    while True:
-        try:
-            http_response = requests.get(config.UPDATE_URL)
-            ret = http_response.json()
-            if max_brightness != ret['MAX_BRIGHTNESS']:
-                max_brightness = ret['MAX_BRIGHTNESS']
-                print("new MAX_BRIGHTNESS: " + str(ret['MAX_BRIGHTNESS']))
-            if current_visualization_name != ret['CURRENT_VISUALIZATION']:
-                print("new visualization: " + ret['CURRENT_VISUALIZATION'])
-                current_visualization_name = ret['CURRENT_VISUALIZATION']
-                if current_visualization_name == "visualize_spectrum":
-                    visualization_effect = visualize_spectrum
-                if current_visualization_name == "visualize_energy":
-                    visualization_effect = visualize_energy
-                if current_visualization_name == "visualize_scroll":
-                    visualization_effect = visualize_scroll
-                if current_visualization_name == "visualize_vumeter":
-                    visualization_effect = visualize_vumeter
-                if current_visualization_name == "visualize_amplitude_per_frequency":
-                    visualization_effect = visualize_amplitude_per_frequency
-                if current_visualization_name == "visualize_amplitude_per_frequency_one_color":
-                    visualization_effect = visualize_amplitude_per_frequency_one_color
-                print(visualization_effect)
-        except Exception as e:
-            print(e)
+@app.route("/", methods=['GET', 'POST'])
+@app.route("/vis", methods=['GET', 'POST'])
+def vis():
+    global visualization_effect
+    if request.method == 'POST':
+        form_vis = request.form["name"]
+        if form_vis == "visualize_spectrum":
+            visualization_effect = visualize_spectrum
+        if form_vis == "visualize_energy":
+            visualization_effect = visualize_energy
+        if form_vis == "visualize_scroll":
+            visualization_effect = visualize_scroll
+        if form_vis == "visualize_vumeter":
+            visualization_effect = visualize_vumeter
+        if form_vis == "visualize_amplitude_per_frequency":
             visualization_effect = visualize_amplitude_per_frequency
-        time.sleep(1)
+        if form_vis == "visualize_amplitude_per_frequency_one_color":
+            visualization_effect = visualize_amplitude_per_frequency_one_color
+        print(visualization_effect)
+    return render_template('index.html', MAX_BRIGHTNESS=max_brightness)
+
+
+@app.route("/brightness", methods=['POST'])
+def brightness():
+    global max_brightness
+    print(request.form["brightnessValue"])
+    max_brightness = int(request.form["brightnessValue"])
+    return render_template('index.html', MAX_BRIGHTNESS=max_brightness)
+
+
+@app.route("/get")
+def get():
+    return CURRENT_VISUALIZATION
+
+
+@app.route("/off")
+def off():
+    led.pixels = np.tile(1.0, (3, config.N_PIXELS))
+    led.update()
+    led.pixels = np.tile(0.0, (3, config.N_PIXELS))
+    led.update()
+    return render_template('index.html', MAX_BRIGHTNESS=max_brightness)
+
+
+@app.route("/config")
+def get_config():
+    data = {"CURRENT_VISUALIZATION": CURRENT_VISUALIZATION, "MAX_BRIGHTNESS": max_brightness}
+    s = json.dumps(data)
+    return s
+
+
+def read_stream():
+    print("started read stream thread.")
+    print("listening to " + config.SOURCE)
+    if config.SOURCE == 'stdin':
+        stdin.start_stream(microphone_update)
+    else:
+        microphone.start_stream(microphone_update)
 
 
 if __name__ == '__main__':
-    thread1 = threading.Thread(target=update_config)
-    thread1.start()
+    thread_read_stream = threading.Thread(target=read_stream)
+    thread_read_stream.start()
     if config.USE_GUI:
         import pyqtgraph as pg
         from pyqtgraph.Qt import QtGui, QtCore
@@ -482,8 +517,7 @@ if __name__ == '__main__':
         layout.addItem(spectrum_label)
     # Initialize LEDs
     led.update()
+
     # Start listening to live audio stream
-    if config.SOURCE == 'stdin':
-        stdin.start_stream(microphone_update)
-    else:
-        microphone.start_stream(microphone_update)
+    app.run(host='0.0.0.0')
+    print("started web interface.")
