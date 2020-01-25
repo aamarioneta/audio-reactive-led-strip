@@ -239,7 +239,7 @@ This project was developed by Scott Lawson and is released under the MIT License
 
 # Visualize output directly from the sound card
 ## Visualize output from Kodi
-Configure Kody to output to PulseAudio
+Configure Kody to output to PulseAudio, then pipe the output of the monitor to vis.python. To find out which output device to use with following command ```pacmd list | grep ".monitor"```
 
 ```pacat --channels 2 --record -d alsa_output.pci-0000_00_1b.0.iec958-stereo.monitor | python3 -u vis.py```
 ## Visualize output from mpd
@@ -255,4 +255,4 @@ audio_output {
 ```
 Now redirect the pipe to the python script
 
-```cat /tmp/mpd.fifo | python3 -u /media/data/docs/work/led/aamarioneta/audio-reactive-led-strip/python/vis.py```
+```cat /tmp/mpd.fifo | python3 -u vis.py```
