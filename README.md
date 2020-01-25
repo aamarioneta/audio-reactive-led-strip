@@ -236,3 +236,23 @@ If you encounter any issues or have questions about this project, feel free to [
 
 # License
 This project was developed by Scott Lawson and is released under the MIT License.
+
+# Visualize output directly from the sound card
+## Visualize output from Kodi
+Configure Kody to output to PulseAudio
+
+```pacat --channels 2 --record -d alsa_output.pci-0000_00_1b.0.iec958-stereo.monitor | python3 -u vis.py```
+## Visualize output from mpd
+Configure mpd to play to output to PulseAudio. Then add the following FIFO output and restart:
+
+```
+audio_output {
+        type "fifo"
+        name "FIFO"
+        path "/tmp/mpd.fifo"
+        format "44100:16:1"
+}
+```
+Now redirect the pipe to the python script
+
+```cat /tmp/mpd.fifo | python3 -u /media/data/docs/work/led/aamarioneta/audio-reactive-led-strip/python/vis.py```
