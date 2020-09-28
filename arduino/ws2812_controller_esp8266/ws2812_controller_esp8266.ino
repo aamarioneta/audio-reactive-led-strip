@@ -26,6 +26,8 @@
 #include <WiFiUdp.h>
 #include <NeoPixelBus.h>
 
+#include "credentials.h"
+
 // Set to the number of LEDs in your LED strip
 #define NUM_LEDS 54
 // Maximum number of packets to hold in the buffer. Don't change this.
@@ -36,9 +38,6 @@
 //NeoPixelBus settings
 const uint8_t PixelPin = 3;  // make sure to set this to the correct pin, ignored for Esp8266(set to 3 by default for DMA)
 
-// Wifi and socket settings
-const char* ssid     = "SSID";
-const char* password = "PASSWORD";
 unsigned int localPort = 7777;
 char packetBuffer[BUFFER_LEN];
 
@@ -62,7 +61,7 @@ void setup() {
     digitalWrite(led, LOW);
     Serial.begin(115200);
     WiFi.config(ip, gateway, subnet);
-    WiFi.begin(ssid, password);
+    WiFi.begin(STASSID, STAPSK);
     Serial.println("");
     // Connect to wifi and print the IP address over serial
     while (WiFi.status() != WL_CONNECTED) {
@@ -71,7 +70,7 @@ void setup() {
     }
     Serial.println("");
     Serial.print("Connected to ");
-    Serial.println(ssid);
+    Serial.println(STASSID);
     Serial.print("IP address: ");
     Serial.println(WiFi.localIP());
     digitalWrite(led, HIGH);
