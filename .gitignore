@@ -49,3 +49,9 @@ Temporary Items
 *.pdf
 
 .idea
+
+credentials.h
+mqtt.h
+vis.sh
+vis.service
+.vscode

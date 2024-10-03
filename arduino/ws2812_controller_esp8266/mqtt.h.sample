@@ -1,0 +1,9 @@
+#define MQTT_SERVER "mqtt.lan"
+#define MQTT_PORT 1883
+#define MQTT_USERNAME "username"
+#define MQTT_PASSWORD "password"
+#define MQTT_DISCOVERY_TOPIC "homeassistant/switch/visled/config"
+#define MQTT_STATE_TOPIC "house/visled/state"
+#define MQTT_COMMAND_TOPIC "homeassistant/switch/visled/set"
+#define MQTT_COMMAND_ON "ON"
+#define MQTT_COMMAND_OFF "OFF"

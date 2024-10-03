@@ -13,6 +13,10 @@ import threading
 from flask import Flask
 from flask import render_template
 from flask import request
+import socket
+import struct
+import sys
+import time
 
 max_brightness = 64.0
 CURRENT_VISUALIZATION = "visualize_vumeter"
@@ -237,7 +241,9 @@ def visualize_amplitude_per_frequency_one_color(y):
     return output
 
 
-globalMaxAmp = 0.0001
+globalMaxAmp = 0.0000001
+
+globalVUValues = []
 
 
 def visualize_vumeter(y):
@@ -249,20 +255,25 @@ def visualize_vumeter(y):
     r = np.tile(0.0, config.N_PIXELS)
     g = np.tile(0.0, config.N_PIXELS)
     b = np.tile(0.0, config.N_PIXELS)
-    max_amplitude = np.average(y)
-    globalMaxAmp = max(max_amplitude, globalMaxAmp)
-    j = int(max_amplitude * config.N_PIXELS / globalMaxAmp)
+    avg_amplitude = np.average(y)
+    globalMaxAmp = max(avg_amplitude, globalMaxAmp)
+    j = int(avg_amplitude * config.N_PIXELS / globalMaxAmp)
     for i in range(config.N_PIXELS):
         if j > i:
             if i < config.N_PIXELS / 3 * 2:
+                # first two thirds of the leds are green
                 g[i] = 0.1
             else:
+                # the last third of the leds are red
                 r[i] = 0.1
         else:
             r[i] = 0
             g[i] = 0
     output = np.array([r, g, b]) * max_brightness
-    globalMaxAmp = globalMaxAmp - .001
+    # globalMaxAmp = globalMaxAmp - .001
+    vuMeterAmplitude = avg_amplitude * 255 / globalMaxAmp
+    # print ("globalMaxAmp: ", globalMaxAmp , "avg_amplitude: ", avg_amplitude, "vuMeterAmplitude: ", vuMeterAmplitude)
+    led.globalVUValues = [int(vuMeterAmplitude),int(vuMeterAmplitude)]
     return output
 
 
@@ -312,6 +323,11 @@ def microphone_update(audio_samples):
         mel /= mel_gain.value
         mel = mel_smoothing.update(mel)
         # Map filterbank output onto LED strip
+
+        #print('--------')
+        #led.globalVUValues = np.round_(np.tile((np.average(mel) / 1000)*1000,2), decimals = 3) # np.amax(np.split(y_data,2), axis=1, keepdims=True)
+        #print(led.globalVUValues)
+        #print('++++++++')
         output = visualization_effect(mel)
         led.pixels = output
         led.update()
@@ -395,12 +411,25 @@ def get_config():
 
 
 def read_stream():
-    print("started read stream thread.")
+    print("started read stream thread!!!!!!!!!!!!")
     print("listening to " + config.SOURCE)
+    print("UDP", config.UDP_IP, config.UDP_PORT)
+    print("ANALOG_VU_METER_IP", config.ANALOG_VU_METER_IP, config.ANALOG_VU_METER_PORT)
     if config.SOURCE == 'stdin':
         stdin.start_stream(microphone_update)
     else:
         microphone.start_stream(microphone_update)
+
+def RequestTimefromNtp(addr='openwrt.lan'):
+    REF_TIME_1970 = 2208988800  # Reference time
+    client = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    data = b'\x1b' + 47 * b'\0'
+    client.sendto(data, (addr, 123))
+    data, address = client.recvfrom(1024)
+    if data:
+        t = struct.unpack('!12I', data)[10]
+        t -= REF_TIME_1970
+    return time.ctime(t), t
 
 
 if __name__ == '__main__':
@@ -519,5 +548,6 @@ if __name__ == '__main__':
     led.update()
 
     # Start listening to live audio stream
-    app.run(host='0.0.0.0')
+    app.run(host='0.0.0.0', port=5001)
+    print(RequestTimefromNtp())
     print("started web interface.")
