@@ -17,12 +17,16 @@ to control the leds connected to it.
 """
 
 if DEVICE == 'esp8266':
-    UDP_IP = '192.168.178.40'
+    UDP_IP = 'visled.lan'
     """IP address of the ESP8266. Must match IP in ws2812_controller.ino"""
     UDP_PORT = 7777
     """Port number used for socket communication between Python and ESP8266"""
     SOFTWARE_GAMMA_CORRECTION = False
     """Set to False because the firmware handles gamma correction + dither"""
+    ANALOG_VU_METER_IP = 'vumeter.lan'
+    """IP address of the ESP8266. Must match IP in ws2812_controller.ino"""
+    ANALOG_VU_METER_PORT = 7832
+    ANALOG_VU_METER_ENABLED = True
 
 if DEVICE == 'pi':
     LED_PIN = 18
@@ -45,8 +49,10 @@ if DEVICE == 'blinkstick':
 USE_GUI = False
 """Whether or not to display a PyQtGraph GUI plot of visualization"""
 
-DISPLAY_FPS = False
+DISPLAY_FPS = True
 """Whether to display the FPS when running (can reduce performance)"""
+
+SEND_TO_VUMETER = True
 
 N_PIXELS = 54
 """Number of pixels in the LED strip (must match ESP8266 firmware)"""
@@ -117,6 +123,6 @@ start the visualisation with
 
 ONE3RD = 1 / 3
 
-UPDATE_URL = 'http://localhost:5000/config'
+UPDATE_URL = 'http://localhost:5001/config'
 
 NR_OF_CHANNELS = 3.0

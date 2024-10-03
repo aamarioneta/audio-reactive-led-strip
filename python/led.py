@@ -4,6 +4,7 @@ from __future__ import division
 import platform
 import numpy as np
 import config
+from time import sleep
 
 # ESP8266 uses WiFi communication
 if config.DEVICE == 'esp8266':
@@ -40,6 +41,10 @@ _prev_pixels = np.tile(253, (3, config.N_PIXELS))
 pixels = np.tile(1, (3, config.N_PIXELS))
 """Pixel values for the LED strip"""
 
+globalVUValues = []
+
+packetsSent = 0
+
 _is_python_2 = int(platform.python_version_tuple()[0]) == 2
 
 def _update_esp8266():
@@ -57,7 +62,7 @@ def _update_esp8266():
         g (0 to 255): Green value of LED
         b (0 to 255): Blue value of LED
     """
-    global pixels, _prev_pixels
+    global pixels, _prev_pixels, globalVUValues, packetsSent
     # Truncate values and cast to integer
     pixels = np.clip(pixels, 0, 255).astype(int)
     # Optionally apply gamma correc tio
@@ -79,7 +84,19 @@ def _update_esp8266():
                 m.append(p[1][i])  # Pixel green value
                 m.append(p[2][i])  # Pixel blue value
         m = m if _is_python_2 else bytes(m)
+        # send to the LED VU Meter
         _sock.sendto(m, (config.UDP_IP, config.UDP_PORT))
+        #is_all_zero = np.all((pixels == 0))
+        #if (config.ANALOG_VU_METER_ENABLED and not is_all_zero):
+        # send to the analog VU Meter
+        if config.SEND_TO_VUMETER:
+            if config.DISPLAY_FPS:
+                print(f'{bytearray(globalVUValues)}-----')
+            _sock.sendto(bytearray(globalVUValues), (config.ANALOG_VU_METER_IP, config.ANALOG_VU_METER_PORT))
+        
+        packetsSent = packetsSent + 1
+        if config.DISPLAY_FPS:
+            print(f'sent {packetsSent} packets. {bytearray(m)}')
     _prev_pixels = np.copy(p)
 
 

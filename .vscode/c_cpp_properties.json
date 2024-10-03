@@ -1,0 +1,23 @@
+{
+    "configurations": [
+        {
+            "name": "Linux",
+            "includePath": [
+                "/home/alex/Arduino/libraries/NeoPixelBus_by_Makuna/src",
+                "/home/alex/.arduino15/packages/esp8266/hardware/esp8266/2.5.2/libraries/ESP8266WiFi/src",
+                "/home/alex/.arduino15/packages/esp8266/tools/**",
+                "/home/alex/.arduino15/packages/esp8266/hardware/esp8266/2.5.2/**",
+                "/home/alex/.arduino15/packages/esp8266/hardware/esp8266/2.7.1/**",
+                "/home/alex/.arduino15/packages/esp8266/hardware/esp8266/2.7.4/**",
+                "C:\\Users\\alex\\AppData\\Local\\Arduino15\\packages\\esp8266\\hardware\\esp8266\\2.7.4\\**",
+                "C:\\Users\\alex\\AppData\\Local\\Arduino15\\packages\\esp8266\\tools\\**"
+            ],
+            "forcedInclude": [],
+            "intelliSenseMode": "gcc-x64",
+            "compilerPath": "/usr/bin/gcc",
+            "cStandard": "c11",
+            "cppStandard": "c++17"
+        }
+    ],
+    "version": 4
+}
